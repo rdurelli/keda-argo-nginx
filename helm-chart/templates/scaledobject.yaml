@@ -1,0 +1,21 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: quarkus-keda
+  namespace: quarkus
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1 # Default
+    kind: Deployment # Default
+    name: quarkus-helm-chart
+  pollingInterval: 30 # Default 30
+  cooldownPeriod: 300 # Default 300
+  minReplicaCount: 1 # Default 0
+  maxReplicaCount: 10 # Default 100
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        metricName: nginx_service_requests_total
+        threshold: "40"
+        query: sum(rate(nginx_ingress_controller_requests[1m]))
